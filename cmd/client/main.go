@@ -43,5 +43,4 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt)
 	exit := <-signalChan
 	log.Fatal("Got signal: ", exit)
-
 }

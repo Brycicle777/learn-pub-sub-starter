@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 
@@ -26,14 +27,39 @@ func main() {
 		log.Fatalf("Error creating connection channel: %v", err)
 	}
 	//don't forget about "peril_direct exchange needed in RabbitMQ web config"
-	err = pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{IsPaused: true})
-	if err != nil {
-		log.Fatalf("Error publishing message: %v", err)
-	}
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
-	exit := <-signalChan
-	log.Fatal("Got signal: ", exit)
+	for {
+		select {
+		case exit := <-signalChan:
+			log.Fatal("Got signal: ", exit)
+		default:
+			input := gamelogic.GetInput()
+			if len(input) > 0 {
+				firstWord := input[0]
+				switch firstWord {
+				case "pause":
+					fmt.Println("Sending pause message")
+					err = pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{IsPaused: true})
+					if err != nil {
+						log.Fatalf("Error publishing message: %v", err)
+					}
+				case "resume":
+					fmt.Println("Sending resume message")
+					err = pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{IsPaused: false})
+					if err != nil {
+						log.Fatalf("Error publishing message: %v", err)
+					}
+				case "quit":
+					fmt.Println("Exiting..")
+					return
+				default:
+					fmt.Println("Unknown command")
+				}
+
+			}
+		}
+	}
 
 }
