@@ -27,6 +27,18 @@ func main() {
 		log.Fatalf("Error creating connection channel: %v", err)
 	}
 	//don't forget about "peril_direct exchange needed in RabbitMQ web config"
+	//and peril_topic now too
+
+	_, _, err = pubsub.DeclareAndBind(
+		conn,
+		routing.ExchangePerilTopic,
+		routing.GameLogSlug,
+		routing.GameLogSlug+".",
+		pubsub.Durable,
+	)
+	if err != nil {
+		log.Fatalf("Error declaring and binding queue: %v", err)
+	}
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
