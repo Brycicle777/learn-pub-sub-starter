@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"internal/pubsub"
-	"internal/routing"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
